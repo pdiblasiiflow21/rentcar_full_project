@@ -24,6 +24,11 @@
           <input id="has_gnc" type="checkbox" v-model="form.has_gnc" class="h-4 w-4" />
           <label for="has_gnc" class="font-medium">Tiene GNC</label>
         </div>
+        <div>
+          <label class="block font-medium">Cédula Verde (Frente y Dorso)</label>
+          <input type="file" @change="onDocumentsChange" multiple accept="image/*,.pdf" class="border rounded px-3 py-2 w-full" />
+          <p class="text-sm text-gray-600 mt-1">Selecciona hasta 2 imágenes o PDFs (máx. 20MB cada uno)</p>
+        </div>
 
         <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar vehículo</button>
       </form>
