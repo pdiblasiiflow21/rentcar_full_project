@@ -2,12 +2,18 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../views/Login.vue';
 import Dashboard from '../views/dashboard.vue';
 import Payments from '../views/Payments.vue';
+import Drivers from '../views/Drivers.vue';
+import Vehicles from '../views/Vehicles.vue';
+import Rentals from '../views/Rentals.vue';
 
 
 const routes = [
   { path: '/login', component: Login },
   { path: '/', component: Dashboard, meta: { requiresAuth: true } },
-  { path: '/payments', component: Payments, meta: { requiresAuth: true } }
+  { path: '/payments', component: Payments, meta: { requiresAuth: true } },
+  { path: '/drivers', component: Drivers, meta: { requiresAuth: true } },
+  { path: '/vehicles', component: Vehicles, meta: { requiresAuth: true } },
+  { path: '/rentals', component: Rentals, meta: { requiresAuth: true } },
 ];
 
 

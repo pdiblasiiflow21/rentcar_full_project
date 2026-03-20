@@ -19,6 +19,13 @@ auth.fetchUser();
     <p class="text-gray-500 mt-2">
       Sistema de alquiler de vehículos
     </p>
+
+    <div class="mt-4 space-x-3">
+      <router-link to="/drivers" class="text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">Conductores</router-link>
+      <router-link to="/vehicles" class="text-white bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700">Vehículos</router-link>
+      <router-link to="/rentals" class="text-white bg-purple-600 px-4 py-2 rounded hover:bg-purple-700">Alquileres</router-link>
+      <router-link to="/payments" class="text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Pagos</router-link>
+    </div>
   </div>
 </template>
 
