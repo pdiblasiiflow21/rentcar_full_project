@@ -28,6 +28,10 @@
           <label class="block font-medium">Email</label>
           <input type="email" v-model="form.email" class="border rounded px-3 py-2 w-full" />
         </div>
+        <div>
+          <label class="block font-medium">Documentos (hasta 4 archivos, jpg/png/pdf)</label>
+          <input type="file" ref="documentInput" multiple accept="image/*,.pdf" @change="onDocumentsChange" class="border rounded px-3 py-2 w-full" />
+        </div>
 
         <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar conductor</button>
       </form>
@@ -48,6 +52,7 @@
             <th class="p-2 border">Vencimiento</th>
             <th class="p-2 border">Teléfono</th>
             <th class="p-2 border">Email</th>
+            <th class="p-2 border">Documentos</th>
           </tr>
         </thead>
         <tbody>
@@ -59,6 +64,11 @@
             <td class="p-2 border">{{ driver.license_expiration || '-' }}</td>
             <td class="p-2 border">{{ driver.phone || '-' }}</td>
             <td class="p-2 border">{{ driver.email || '-' }}</td>
+            <td class="p-2 border">
+              <ul class="list-disc pl-5">
+                <li v-for="doc in driver.documents || []" :key="doc"> <a :href="doc" target="_blank" class="text-blue-600 underline">Ver</a> </li>
+              </ul>
+            </td>
           </tr>
           <tr v-if="drivers.length === 0">
             <td class="p-2 border text-center" colspan="7">No hay conductores registrados.</td>
@@ -84,6 +94,7 @@ const form = ref({
   license_expiration: '',
   phone: '',
   email: '',
+  documents: [],
 });
 
 const loadDrivers = async () => {
@@ -95,12 +106,39 @@ const loadDrivers = async () => {
   }
 };
 
+const onDocumentsChange = (event) => {
+  const files = Array.from(event.target.files || []);
+  form.value.documents = files.slice(0, 4);
+  if (files.length > 4) {
+    error.value = 'Solo se permiten hasta 4 archivos.';
+  } else {
+    error.value = '';
+  }
+};
+
 const storeDriver = async () => {
   try {
     error.value = '';
     status.value = '';
 
-    const res = await api.post('/drivers', form.value);
+    const formData = new FormData();
+    formData.append('name', form.value.name);
+    formData.append('dni', form.value.dni);
+    formData.append('license_number', form.value.license_number);
+    formData.append('license_expiration', form.value.license_expiration);
+    formData.append('phone', form.value.phone);
+    formData.append('email', form.value.email);
+
+    if (form.value.documents.length > 0) {
+      form.value.documents.slice(0, 4).forEach((file) => {
+        formData.append('documents[]', file);
+      });
+    }
+
+    const res = await api.post('/drivers', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
     drivers.value.push(res.data);
 
     status.value = 'Conductor creado correctamente';
@@ -111,7 +149,11 @@ const storeDriver = async () => {
       license_expiration: '',
       phone: '',
       email: '',
+      documents: [],
     };
+    if (document.querySelector('input[type=file]')) {
+      document.querySelector('input[type=file]').value = '';
+    }
   } catch (err) {
     error.value = err.response?.data?.message || 'Error al crear conductor';
   }

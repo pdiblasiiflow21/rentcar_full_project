@@ -16,5 +16,11 @@ class Driver extends Model
         'license_expiration',
         'phone',
         'email',
+        'documents',
+    ];
+
+    protected $casts = [
+        'documents' => 'array',
+        'license_expiration' => 'date',
     ];
 }

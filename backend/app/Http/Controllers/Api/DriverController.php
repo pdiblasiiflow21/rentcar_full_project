@@ -22,8 +22,26 @@ class DriverController extends Controller
             'license_expiration' => 'nullable|date',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'documents' => 'nullable|array|max:4',
+            'documents.*' => 'file|mimes:jpg,jpeg,png,gif,pdf|max:20480',
         ]);
 
-        return Driver::create($data);
+        $documents = [];
+
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $index => $file) {
+                $path = $file->store('drivers/documents', 'public');
+                $documents[] = $path;
+            }
+        }
+
+        $data['documents'] = $documents;
+
+        $driver = Driver::create($data);
+
+        // Retornar URL de documento para frontend
+        $driver->documents = collect($documents)->map(fn($path) => asset('storage/'.$path));
+
+        return $driver;
     }
 }
