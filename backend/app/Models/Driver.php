@@ -17,10 +17,14 @@ class Driver extends Model
         'phone',
         'email',
         'documents',
+        'enabled',
     ];
 
     protected $casts = [
         'documents' => 'array',
         'license_expiration' => 'date',
+        'documents' => 'array',
+        'license_expiration' => 'date',
+        'enabled' => 'boolean',
     ];
 }

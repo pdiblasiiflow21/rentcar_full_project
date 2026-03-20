@@ -15,6 +15,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/drivers', [DriverController::class, 'index']);
     Route::post('/drivers', [DriverController::class, 'store']);
+    Route::put('/drivers/{id}', [DriverController::class, 'update']);
+    Route::patch('/drivers/{id}/toggle', [DriverController::class, 'toggle']);
 
     Route::get('/vehicles', [VehicleController::class, 'index']);
     Route::post('/vehicles', [VehicleController::class, 'store']);

@@ -19,6 +19,7 @@ return new class extends Migration
         $table->date('license_expiration')->nullable();
         $table->string('phone')->nullable();
         $table->string('email')->nullable();
+        $table->boolean('enabled')->default(true);
         $table->timestamps();
     });
 }

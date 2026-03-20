@@ -8,7 +8,7 @@
           <label class="block font-medium">Conductor</label>
           <select v-model="form.driver_id" class="border rounded px-3 py-2 w-full" required>
             <option value="" disabled>Seleccione conductor</option>
-            <option v-for="d in drivers" :key="d.id" :value="d.id">{{ d.name }} ({{ d.email || 'sin email' }})</option>
+            <option v-for="d in drivers.filter(dr => dr.enabled)" :key="d.id" :value="d.id">{{ d.name }} ({{ d.email || 'sin email' }})</option>
           </select>
         </div>
 

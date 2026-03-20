@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold mb-4">Alta de Conductores</h1>
 
     <div class="bg-white p-4 rounded shadow mb-6">
-      <form @submit.prevent="storeDriver" class="space-y-3">
+      <form @submit.prevent="editingDriver ? updateDriver() : storeDriver()" class="space-y-3">
         <div>
           <label class="block font-medium">Nombre</label>
           <input v-model="form.name" class="border rounded px-3 py-2 w-full" required />
@@ -33,7 +33,10 @@
           <input type="file" ref="documentInput" multiple accept="image/*,.pdf" @change="onDocumentsChange" class="border rounded px-3 py-2 w-full" />
         </div>
 
-        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar conductor</button>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          {{ editingDriver ? 'Actualizar conductor' : 'Guardar conductor' }}
+        </button>
+        <button v-if="editingDriver" type="button" @click="cancelEdit" class="ml-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">Cancelar</button>
       </form>
 
       <p class="text-sm mt-2 text-green-600" v-if="status">{{ status }}</p>
@@ -53,6 +56,8 @@
             <th class="p-2 border">Teléfono</th>
             <th class="p-2 border">Email</th>
             <th class="p-2 border">Documentos</th>
+            <th class="p-2 border">Estado</th>
+            <th class="p-2 border">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -68,6 +73,16 @@
               <ul class="list-disc pl-5">
                 <li v-for="doc in driver.documents || []" :key="doc"> <a :href="doc" target="_blank" class="text-blue-600 underline">Ver</a> </li>
               </ul>
+            </td>
+            <td class="p-2 border">{{ driver.enabled ? 'Habilitado' : 'Deshabilitado' }}</td>
+            <td class="p-2 border">
+              <button class="text-blue-600 underline mr-2" @click="editDriver(driver)">Editar</button>
+              <button
+                :class="driver.enabled ? 'text-red-600 underline' : 'text-green-600 underline'"
+                @click="toggleDriver(driver)"
+              >
+                {{ driver.enabled ? 'Deshabilitar' : 'Habilitar' }}
+              </button>
             </td>
           </tr>
           <tr v-if="drivers.length === 0">
@@ -86,6 +101,7 @@ import api from '../api/axios';
 const drivers = ref([]);
 const status = ref('');
 const error = ref('');
+const editingDriver = ref(null);
 
 const form = ref({
   name: '',
@@ -95,7 +111,78 @@ const form = ref({
   phone: '',
   email: '',
   documents: [],
+  enabled: true,
 });
+const editDriver = (driver) => {
+  editingDriver.value = driver;
+  form.value = {
+    name: driver.name,
+    dni: driver.dni,
+    license_number: driver.license_number,
+    license_expiration: driver.license_expiration,
+    phone: driver.phone,
+    email: driver.email,
+    documents: [], // No se editan documentos en update por ahora
+    enabled: driver.enabled,
+  };
+};
+
+const cancelEdit = () => {
+  editingDriver.value = null;
+  form.value = {
+    name: '',
+    dni: '',
+    license_number: '',
+    license_expiration: '',
+    phone: '',
+    email: '',
+    documents: [],
+    enabled: true,
+  };
+};
+
+const updateDriver = async () => {
+  if (!editingDriver.value) return;
+  try {
+    error.value = '';
+    status.value = '';
+    const formData = new FormData();
+    formData.append('name', form.value.name);
+    formData.append('dni', form.value.dni);
+    formData.append('license_number', form.value.license_number);
+    formData.append('license_expiration', form.value.license_expiration);
+    formData.append('phone', form.value.phone);
+    formData.append('email', form.value.email);
+    formData.append('enabled', form.value.enabled ? 1 : 0);
+    if (form.value.documents.length > 0) {
+      form.value.documents.slice(0, 4).forEach((file) => {
+        formData.append('documents[]', file);
+      });
+    }
+    const res = await api.post(`/drivers/${editingDriver.value.id}?_method=PUT`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    const idx = drivers.value.findIndex(d => d.id === editingDriver.value.id);
+    if (idx !== -1) drivers.value[idx] = res.data;
+    status.value = 'Conductor actualizado correctamente';
+    cancelEdit();
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Error al actualizar conductor';
+  }
+};
+
+const toggleDriver = async (driver) => {
+  try {
+    error.value = '';
+    status.value = '';
+    const res = await api.patch(`/drivers/${driver.id}/toggle`);
+    const idx = drivers.value.findIndex(d => d.id === driver.id);
+    if (idx !== -1) drivers.value[idx] = res.data;
+    status.value = `Conductor ${res.data.enabled ? 'habilitado' : 'deshabilitado'} correctamente`;
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Error al cambiar estado';
+  }
+};
 
 const loadDrivers = async () => {
   try {
