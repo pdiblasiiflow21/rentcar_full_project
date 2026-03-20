@@ -13,9 +13,13 @@
         </option>
       </select>
 
+      <select v-model="form.rental_id" class="border p-2 w-full mb-2" @change="getDebt(form.rental_id)">
+        <option disabled value="">Seleccionar deuda</option>
+      </select>
+
       <input v-model="form.amount" placeholder="Monto" class="border p-2 w-full mb-2"/>
       <input v-model="form.km_reported" placeholder="KM actual" class="border p-2 w-full mb-2"/>
-
+      
       <button @click="save" class="bg-green-500 text-white px-4 py-2 rounded">
         Guardar
       </button>
@@ -45,6 +49,14 @@
     </table>
 
   </div>
+
+  <!-- DEUDA -->
+  <div v-if="debt" class="bg-yellow-100 p-4 rounded mb-4">
+  <p>Esperado: ${{ debt.expected }}</p>
+  <p>Pagado: ${{ debt.paid }}</p>
+  <p class="font-bold">Deuda: ${{ debt.debt }}</p>
+</div>
+
 </template>
 
 <script setup>
@@ -81,4 +93,14 @@ const save = async () => {
 };
 
 onMounted(load);
+
+// mostrar deuda al seleccionar alquiler
+const debt = ref(null);
+
+const getDebt = async (rentalId) => {
+  const res = await api.get(`/rentals/${rentalId}/debt`);
+  debt.value = res.data;
+};
+
 </script>
+
